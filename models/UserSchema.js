@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
+import Loan from "./LoanSchema.js"
 
 const UserSchema = new Schema({
   name: { type: String, required: true },
@@ -18,7 +19,7 @@ const UserSchema = new Schema({
     unique: true, 
     match: /^[6-9]\d{9}$/ 
   },
-  date_of_birth: { type: Date, required: true },
+  date_of_birth: { type: Date },
   father_name: { type: String },
   mother_name: { type: String },
   address: {
@@ -46,6 +47,7 @@ const UserSchema = new Schema({
       default: 'Pending'
     }
   }],
+  loans: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Loan' }],
 }, { timestamps: true });
 
 UserSchema.index({ email: 1, phone: 1 }, { unique: true }); // Indexing

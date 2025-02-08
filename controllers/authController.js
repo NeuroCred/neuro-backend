@@ -5,10 +5,10 @@ import { generateOTP, sendOTP, hashOTP, verifyOTP } from "../services/otpService
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, phone, date_of_birth, self_employed } = req.body;
+    const { name, email, password, phone} = req.body;
 
   
-    if (!name || !email || !password || !phone || !date_of_birth || !self_employed) {
+    if (!name || !email || !password || !phone) {
       return res.status(400).json({ message: "All required fields must be filled!" });
     }
 
@@ -31,9 +31,7 @@ const registerUser = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      phone,
-      date_of_birth,
-      self_employed
+      phone
     });
 
 
