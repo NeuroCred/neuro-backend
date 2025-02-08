@@ -27,17 +27,15 @@ const UserSchema = new Schema({
     city: String,
     pin: String,
   },
-  employment_status: { 
-    type: String, 
-    enum: ['Employed', 'Self-Employed', 'Unemployed', 'Retired'], 
-    required: true 
+  self_employed:{
+    type: Boolean,
   },
   income: { type: Number, min: 0, default: 0 },
   credit_score: { type: Number, min: 300, max: 900, default: 700 },
   documents: [{
     documentType:{
       type: String,
-      enum:['GST', 'License', 'Aadhar', 'PAN']
+      enum:['Aadhar', 'PAN']
     },
     fileId: mongoose.Schema.Types.ObjectId,  // Reference to the file in GridFS
     filename: String,  // Name of the file stored in GridFS

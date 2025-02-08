@@ -5,16 +5,20 @@ import { generateOTP, sendOTP, hashOTP, verifyOTP } from "../services/otpService
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, phone, date_of_birth, employment_status } = req.body;
+    const { name, email, password, phone, date_of_birth, self_employed } = req.body;
 
   
-    if (!name || !email || !password || !phone || !date_of_birth || !employment_status) {
+    if (!name || !email || !password || !phone || !date_of_birth || !self_employed) {
       return res.status(400).json({ message: "All required fields must be filled!" });
     }
 
    
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      return res.status(400).json({ message: "User already exists!" });
+    }
+    const existinguser= await User.findOne({ phone });
+    if (existinguser) {
       return res.status(400).json({ message: "User already exists!" });
     }
 
@@ -29,7 +33,7 @@ const registerUser = async (req, res) => {
       password: hashedPassword,
       phone,
       date_of_birth,
-      employment_status
+      self_employed
     });
 
 
