@@ -52,19 +52,33 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: "Invalid credentials" });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found. Please register first." });
+    }
 
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: "Incorrect password. Please try again." });
+    }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "10d",
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "10d" });
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
     });
-
-    res.json({ token });
   } catch (error) {
-    res.status(500).json({ msg: "Server error" });
+    res.status(500).json({ success: false, message: "Internal server error", error: error.message });
   }
+
 };
 const requestOTP = async (req, res) => {
   try {
@@ -109,6 +123,7 @@ const verifyOTPAndLogin = async (req, res) => {
     // Clear OTP after successful login
     user.otp = null;
     user.otpExpires = null;
+    user.isVerified = true;
     await user.save();
 
     res.status(200).json({ message: "Login successful!", token });
