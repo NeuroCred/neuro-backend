@@ -1,15 +1,54 @@
 import mongoose from "mongoose";
+import User from "../models/UserSchema.js";
 import { getGridFSBucket } from "../config/db.js";
 
 // 📌 Upload File Controller
-const uploadFile = (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "No file uploaded!" });
-  }
-
-  console.log("📄 File Uploaded Successfully:", req.file);
-  res.status(201).json({ fileId: req.file.id, message: "File uploaded successfully!" });
-};
+  const uploadFile = async (req, res) => {
+    try {
+      const { userId } = req.params; // Get userId from URL params
+      const { documentType } = req.body; // Get documentType from request body
+  
+      // Validate documentType
+      if (!["Aadhar", "PAN"].includes(documentType)) {
+        return res.status(400).json({ message: "Invalid document type. Allowed: Aadhar, PAN." });
+      }
+  
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded!" });
+      }
+  
+      // Find user in database
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found!" });
+      }
+  
+      // Create document entry
+      const newDocument = {
+        documentType,
+        fileId: new mongoose.Types.ObjectId(req.file.id), // Store GridFS file ID
+        filename: req.file.filename,
+        uploadDate: new Date(),
+        status: "Pending",
+      };
+  
+      // Push the new document into user's documents array
+      user.documents.push(newDocument);
+      await user.save();
+  
+      console.log("📄 File Uploaded Successfully:", req.file);
+  
+      res.status(201).json({
+        message: "File uploaded and stored successfully!",
+        fileId: req.file.id,
+        userId: user._id,
+        document: newDocument,
+      });
+    } catch (error) {
+      console.error("❌ Error uploading file:", error);
+      res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+  };
 
 // 📌 Get File by ID Controller
 const getFileById = async (req, res) => {
